@@ -41,21 +41,28 @@
 // right servo:  OCR1B = 1500
 // center servo: OCR2  = 1500/16
 
-void init_servo_timers() {
-    { // init timer1
-        TCCR1A = (1<<COM1A1) | (1<<COM1B1) | (1<<WGM11); // fast PWM mode, TOP determined by ICR1 - non-inverting Compare Output mode
-        TCCR1B = (1<<WGM13) | (1<<WGM12) | (1<<CS11);    // set prescaler to 8, fast PWM Mode mode continued
-        ICR1 = 20000;      // set period to 20 ms
-        OCR1A = 1000;      // set count to 1 ms: 0 deg
-        OCR1B = 1000;      // set count to 1 ms: 0 deg
-        TCNT1 = 0;         // reset timer
-    }
+void set_servo_angles(uint8_t left, uint8_t right, uint8_t center) {
+    OCR1A =  1000 + ((uint16_t)left  *100)/9;
+    OCR1B =  1000 + ((uint16_t)right *100)/9;
+    OCR2  = (1000 + ((uint16_t)center*100)/9)/16;
+}
 
-    { // init timer2
-        TCCR2 = (1<<WGM20) | (1<<WGM21) | (1<<COM21) | (1<<CS22) | (1<<CS20); // prescaler 128, fast PWM mode, clear OC2 on Compare Match, set OC2 at bottom (non-inverting mode)
-        OCR2 = 1000/16; // set count to 1 ms: 0 deg
-    }
+inline void init_timer1() {
+    TCCR1A = (1<<COM1A1) | (1<<COM1B1) | (1<<WGM11); // fast PWM mode, TOP determined by ICR1 - non-inverting Compare Output mode
+    TCCR1B = (1<<WGM13) | (1<<WGM12) | (1<<CS11);    // set prescaler to 8, fast PWM Mode mode continued
+    ICR1 = 20000;      // set period to 20 ms
+    TCNT1 = 0;         // reset timer
+}
 
+inline void init_timer2() {
+    TCNT2 = 255;
+    TCCR2 = (1<<WGM20) | (1<<WGM21) | (1<<COM21) | (1<<CS22) | (1<<CS20); // prescaler 128, fast PWM mode, clear OC2 on Compare Match, set OC2 at bottom (non-inverting mode)
+}
+
+void init_servos() {
+    init_timer1();
+    init_timer2();
+    set_servo_angles(45, 45, 45); // put the servos in the middle position
     TIMSK |= (1<<TICIE1) | (1<<OCIE2); // initialize interrupts, activate
     sei();
 }
@@ -65,14 +72,7 @@ ISR(TIMER2_COMP_vect) { // overflow interrupt timer2
 }
 
 ISR(TIMER1_CAPT_vect) { // capture interrupt timer1
-    TCNT2 = 255;
-    TCCR2 = (1<<WGM20) | (1<<WGM21) | (1<<COM21) | (1<<CS22) | (1<<CS20); // restart timer2
-}
-
-void set_servo_angles(uint8_t left, uint8_t right, uint8_t center) {
-    OCR1A =  1000 + ((uint16_t)left  *100)/9;
-    OCR1B =  1000 + ((uint16_t)right *100)/9;
-    OCR2  = (1000 + ((uint16_t)center*100)/9)/16;
+    init_timer2();
 }
 
 int main(void) {
@@ -81,7 +81,7 @@ int main(void) {
     OUTPUT(SERVO_R_PIN);
     OUTPUT(SERVO_C_PIN);
 
-    init_servo_timers();
+    init_servos();
 
     uint8_t sweep_up = 1;
     uint8_t angle = 0;
