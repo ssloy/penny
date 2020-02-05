@@ -4,26 +4,6 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
-#define  INPUT2(port,pin)   DDR ## port &= ~_BV(pin)
-#define OUTPUT2(port,pin)   DDR ## port |=  _BV(pin)
-#define  CLEAR2(port,pin)  PORT ## port &= ~_BV(pin)
-#define    SET2(port,pin)  PORT ## port |=  _BV(pin)
-#define   READ2(port,pin) ((PIN ## port & _BV(pin))?1:0)
-
-#define  INPUT(x)  INPUT2(x)
-#define OUTPUT(x) OUTPUT2(x)
-#define  CLEAR(x)  CLEAR2(x)
-#define    SET(x)    SET2(x)
-#define   READ(x)   READ2(x)
-#define  WRITE(x,b) ((b)?(SET2(x)):(CLEAR2(x)))
-
-#define LEFT_SENSOR   C,5
-#define RIGHT_SENSOR  C,4
-#define LED_CONTROL   C,0
-#define SERVO_L       B,1
-#define SERVO_R       B,2
-#define SERVO_C       B,3
-
 volatile uint32_t millis = 0; // an approximation of milliseconds elapsed since boot
 
 // The servos take a 50 Hz PWM signal; 1 ms minimum pulse width (0 deg), 2 ms maximum pulse width (90 deg).
@@ -88,15 +68,13 @@ uint16_t adc_read(uint8_t ch) {
 }
 
 int main(void) {
-    INPUT( LEFT_SENSOR);
-    INPUT(RIGHT_SENSOR);
-    OUTPUT(LED_CONTROL);
-    SET(LED_CONTROL);
-
-    OUTPUT(SERVO_L);
-    OUTPUT(SERVO_R);
-    OUTPUT(SERVO_C);
-
+    DDRC &= ~_BV(4); // input: left  phototransistor
+    DDRC &= ~_BV(5); // input: right phototransistor
+    DDRC |=  _BV(0); // output: IR LED control
+    DDRB |=  _BV(1); // output: left servo
+    DDRB |=  _BV(2); // output: right servo
+    DDRB |=  _BV(3); // output: center servo
+    PORTC |= _BV(0); // set the LED control pin to HIGH
     init_servos();
 
     uint16_t adc_left_eye  = adc_read(4);
