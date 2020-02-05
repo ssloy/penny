@@ -17,10 +17,14 @@
 #define   READ(x)   READ2(x)
 #define  WRITE(x,b) ((b)?(SET2(x)):(CLEAR2(x)))
 
-#define TEST_PIN       C,5
-#define SERVO_L_PIN    B,1
-#define SERVO_R_PIN    B,2
-#define SERVO_C_PIN    B,3
+#define LEFT_SENSOR   C,5
+#define RIGHT_SENSOR  C,4
+#define LED_CONTROL   C,0
+#define SERVO_L       B,1
+#define SERVO_R       B,2
+#define SERVO_C       B,3
+
+volatile uint32_t millis = 0; // an approximation of milliseconds elapsed since boot
 
 // The servos take a 50 Hz PWM signal; 1 ms minimum pulse width (0 deg), 2 ms maximum pulse width (90 deg).
 // I have three servos, two of them are attached to a 16 bit timer (timer1), and the third one to a 8 bit timer (timer2).
@@ -72,28 +76,43 @@ ISR(TIMER2_COMP_vect) { // overflow interrupt timer2
 }
 
 ISR(TIMER1_CAPT_vect) { // capture interrupt timer1
+    millis += 20;
     init_timer2();
 }
 
+uint16_t adc_read(uint8_t ch) {
+    ADMUX = (1<<REFS0) | (ch&7); // AVcc with external capacitor at AREF pin
+    ADCSRA = (1<<ADEN) | (1<<ADSC) | (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0); // ADC enable, start one conversion, set the prescaler to 128 (8000KHz/128 = 62.5KHz)
+    while (ADCSRA & (1<<ADSC)); // we have started a single conversion; wait for the conversion to complete
+    return ADC;
+}
+
 int main(void) {
-    OUTPUT(TEST_PIN);
-    OUTPUT(SERVO_L_PIN);
-    OUTPUT(SERVO_R_PIN);
-    OUTPUT(SERVO_C_PIN);
+    INPUT( LEFT_SENSOR);
+    INPUT(RIGHT_SENSOR);
+    OUTPUT(LED_CONTROL);
+    SET(LED_CONTROL);
+
+    OUTPUT(SERVO_L);
+    OUTPUT(SERVO_R);
+    OUTPUT(SERVO_C);
 
     init_servos();
 
-    uint8_t sweep_up = 1;
-    uint8_t angle = 0;
+    uint16_t adc_left_eye  = adc_read(4);
+    uint16_t adc_right_eye = adc_read(5);
+
+    uint8_t angle_left  = 0;
+    uint8_t angle_right = 0;
     while (1) {
-        _delay_ms(40);
-        CLEAR(TEST_PIN);
-        _delay_ms(40);
-        SET(TEST_PIN);
-        if ( sweep_up && angle>=90) sweep_up = 0;
-        if (!sweep_up && angle==0)  sweep_up = 1;
-        angle += (sweep_up?1:-1);
-        set_servo_angles(angle, angle, angle);
+        adc_left_eye  = adc_left_eye *.99 + adc_read(4)*.01;
+        adc_right_eye = adc_right_eye*.99 + adc_read(5)*.01;
+
+        angle_left  = (adc_left_eye <256 ? 45 : 75);
+        angle_right = (adc_right_eye<256 ? 45 : 75);
+        set_servo_angles(angle_left, angle_right, 45);
+
+        _delay_ms(1);
     }
 
     return 0;

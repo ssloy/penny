@@ -1,7 +1,6 @@
 GCCFLAGS=-g -O3 -mmcu=atmega8a -std=gnu99 -Wall -Wextra -pedantic
 LINKFLAGS=-lm
 AVRDUDEFLAGS= -c usbasp -p m8
-#-F -V -c arduino -p ATMEGA328P -P /dev/ttyUSB0 -b 57600
 
 all:    main-upload
 
@@ -14,4 +13,7 @@ main.ass:  main.hex
 
 main-upload:       main.hex
 	sudo avrdude ${AVRDUDEFLAGS} -U flash:w:main.hex:a
+
+fuses:
+	sudo avrdude -c usbasp -p m8 -U lfuse:w:0xff:m -U hfuse:w:0xC9:m
 
