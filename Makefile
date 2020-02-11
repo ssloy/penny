@@ -1,6 +1,6 @@
 GCCFLAGS=-g -O3 -mmcu=atmega8a -std=gnu99 -Wall -Wextra -pedantic
 LINKFLAGS=-lm
-AVRDUDEFLAGS= -c usbasp -p m8
+AVRDUDEFLAGS=-B 5 -c usbasp -p m8
 
 all:    main-upload
 

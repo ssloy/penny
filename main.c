@@ -6,6 +6,13 @@
 
 volatile uint32_t millis = 0; // an approximation of milliseconds elapsed since boot
 
+const uint8_t zero_pos[3] = {50, 45, 40};
+const uint8_t min_off[3] = {30, 30, 15};
+const uint8_t max_off[3] = {20, 20, 15};
+
+volatile uint8_t cur_pos[3] = {45, 45, 45};
+
+
 // The servos take a 50 Hz PWM signal; 1 ms minimum pulse width (0 deg), 2 ms maximum pulse width (90 deg).
 // I have three servos, two of them are attached to a 16 bit timer (timer1), and the third one to a 8 bit timer (timer2).
 // I dislike software PWM, therefore both timers are ticking in fast PWM mode.
@@ -67,6 +74,25 @@ uint16_t adc_read(uint8_t ch) {
     return ADC;
 }
 
+#define MIN(a, b)            (((a) < (b)) ? (a) : (b))
+#define MAX(a, b)            (((a) > (b)) ? (a) : (b))
+#define CLAMP(x, low, high)  (MIN(MAX((x), (low)), (high)))
+
+void go(uint8_t lgoal, uint8_t rgoal, uint8_t cgoal, float duration) {
+    uint8_t start_pos[3] = {cur_pos[0], cur_pos[1], cur_pos[2]};
+    uint8_t goal_pos[3] = {lgoal, rgoal, cgoal};
+    uint32_t time_start = millis;
+    while (1) {
+        float t = (millis - time_start)/1000.f;
+        for (uint8_t i=0; i<3; i++) 
+            cur_pos[i] = CLAMP(start_pos[i] + (goal_pos[i] - start_pos[i])*t/duration, zero_pos[i]-min_off[i], zero_pos[i]+max_off[i]);
+        set_servo_angles(cur_pos[0], cur_pos[1], cur_pos[2]);
+        _delay_ms(5);
+        if (t>duration) break;
+    }
+    for (uint8_t i=0; i<3; i++) cur_pos[i] = goal_pos[i];
+}
+
 int main(void) {
     DDRC &= ~_BV(4); // input: left  phototransistor
     DDRC &= ~_BV(5); // input: right phototransistor
@@ -77,6 +103,7 @@ int main(void) {
     PORTC |= _BV(0); // set the LED control pin to HIGH
     init_servos();
 
+/*
     uint16_t adc_left_eye  = adc_read(4);
     uint16_t adc_right_eye = adc_read(5);
 
@@ -92,6 +119,56 @@ int main(void) {
 
         _delay_ms(1);
     }
+*/
+
+    set_servo_angles(zero_pos[0], zero_pos[1], zero_pos[2]);
+    _delay_ms(2000);
+//  set_servo_angles(left_min, right_min, center_min);
+//  _delay_ms(2000);
+//  set_servo_angles(left_max, right_max, center_max);
+//  _delay_ms(2000);
+
+    uint32_t start = millis;
+    while (1) {
+    /*
+        if (0) {
+            // go forward
+            go(angle_left, angle_right, center_max, .1f);
+            go(left_min, right_min, angle_center, .5f);
+            go(angle_left, angle_right, center_min, .1f);
+            go(left_max, right_max, angle_center, .5f);
+        }
+        */
+
+          go(zero_pos[0], zero_pos[1], zero_pos[2]+max_off[2], .25f);
+          go(zero_pos[0], zero_pos[1], zero_pos[2]-min_off[2], .25f);
+          go(zero_pos[0], zero_pos[1], zero_pos[2]+max_off[2], .25f);
+          go(zero_pos[0], zero_pos[1], zero_pos[2]-min_off[2], .25f);
+
+          go(zero_pos[0], zero_pos[1]+max_off[1],   zero_pos[2]-min_off[2], .25f);
+          go(zero_pos[0], zero_pos[1]-min_off[1]/2, zero_pos[2]-min_off[2], .25f);
+
+          go(zero_pos[0], zero_pos[1], zero_pos[2]-min_off[2], .25f);
+          go(zero_pos[0], zero_pos[1], zero_pos[2]+max_off[2], .25f);
+          go(zero_pos[0], zero_pos[1], zero_pos[2]-min_off[2], .25f);
+          go(zero_pos[0], zero_pos[1], zero_pos[2]+max_off[2], .25f);
+
+          go(zero_pos[0]+max_off[0], zero_pos[1],   zero_pos[2]+max_off[2], .25f);
+          go(zero_pos[0]-min_off[0]/2, zero_pos[1], zero_pos[2]+max_off[2], .25f);
+
+
+/*
+        go(angle_left, angle_right, center_max, .1f);
+        go(left_min, right_max, angle_center, .5f);
+        go(angle_left, angle_right, center_min, .1f);
+        go(left_max, right_min, angle_center, .5f);
+        _delay_ms(5);
+*/
+        if (millis-start>5*1000) break;
+    }
+    set_servo_angles(zero_pos[0], zero_pos[1], zero_pos[2]);
+//  set_servo_angles(45, 45, 45);
+    while (1);
 
     return 0;
 }
