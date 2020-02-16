@@ -6,9 +6,8 @@
 
 volatile uint32_t millis = 0; // an approximation of milliseconds elapsed since boot
 
-const uint8_t zero_pos[3] = {50, 45, 40};
-const uint8_t min_off[3] = {30, 30, 15};
-const uint8_t max_off[3] = {20, 20, 15};
+const uint8_t zero[3] = {45, 50, 40};
+const uint8_t range[3] = {25, 25, 20};
 
 volatile uint8_t cur_pos[3] = {45, 45, 45};
 
@@ -85,13 +84,43 @@ void go(uint8_t lgoal, uint8_t rgoal, uint8_t cgoal, float duration) {
     while (1) {
         float t = (millis - time_start)/1000.f;
         for (uint8_t i=0; i<3; i++) 
-            cur_pos[i] = CLAMP(start_pos[i] + (goal_pos[i] - start_pos[i])*t/duration, zero_pos[i]-min_off[i], zero_pos[i]+max_off[i]);
+            cur_pos[i] = CLAMP(start_pos[i] + (goal_pos[i] - start_pos[i])*t/duration, zero[i]-range[i], zero[i]+range[i]);
         set_servo_angles(cur_pos[0], cur_pos[1], cur_pos[2]);
         _delay_ms(5);
         if (t>duration) break;
     }
     for (uint8_t i=0; i<3; i++) cur_pos[i] = goal_pos[i];
 }
+
+void advance(float scale) {
+    go(zero[0]-range[0], zero[1]-range[1], zero[2]+range[2],  .33f*scale);
+    go(zero[0]-range[0], zero[1]-range[1], zero[2]-range[2], .166f*scale);
+    go(zero[0]+range[0], zero[1]+range[1], zero[2]-range[2],  .33f*scale);
+    go(zero[0]+range[0], zero[1]+range[1], zero[2]+range[2], .166f*scale);
+}
+
+void turn_left(float scale) {
+    go(zero[0]+range[0], zero[1]-range[1], zero[2]+range[2],  .33f*scale);
+    go(zero[0]+range[0], zero[1]-range[1], zero[2]-range[2], .166f*scale);
+    go(zero[0]-range[0], zero[1]+range[1], zero[2]-range[2],  .33f*scale);
+    go(zero[0]-range[0], zero[1]+range[1], zero[2]+range[2], .166f*scale);
+}
+
+void turn_right(float scale) {
+    go(zero[0]-range[0], zero[1]+range[1], zero[2]+range[2],  .33f*scale);
+    go(zero[0]-range[0], zero[1]+range[1], zero[2]-range[2], .166f*scale);
+    go(zero[0]+range[0], zero[1]-range[1], zero[2]-range[2],  .33f*scale);
+    go(zero[0]+range[0], zero[1]-range[1], zero[2]+range[2], .166f*scale);
+}
+
+void retreat(float scale) {
+    go(zero[0]-range[0], zero[1]-range[1], zero[2]-range[2],  .33f*scale);
+    go(zero[0]-range[0], zero[1]-range[1], zero[2]+range[2], .166f*scale);
+    go(zero[0]+range[0], zero[1]+range[1], zero[2]+range[2],  .33f*scale);
+    go(zero[0]+range[0], zero[1]+range[1], zero[2]-range[2], .166f*scale);
+}
+
+
 
 int main(void) {
     DDRC &= ~_BV(4); // input: left  phototransistor
@@ -109,6 +138,7 @@ int main(void) {
 
     uint8_t angle_left  = 0;
     uint8_t angle_right = 0;
+    uint32_t start = millis;
     while (1) {
         adc_left_eye  = adc_left_eye *.99 + adc_read(4)*.01;
         adc_right_eye = adc_right_eye*.99 + adc_read(5)*.01;
@@ -121,54 +151,76 @@ int main(void) {
     }
 */
 
-    set_servo_angles(zero_pos[0], zero_pos[1], zero_pos[2]);
-    _delay_ms(2000);
-//  set_servo_angles(left_min, right_min, center_min);
-//  _delay_ms(2000);
-//  set_servo_angles(left_max, right_max, center_max);
-//  _delay_ms(2000);
+    set_servo_angles(zero[0], zero[1], zero[2]);
+    _delay_ms(5000);
 
-    uint32_t start = millis;
-    while (1) {
-    /*
-        if (0) {
-            // go forward
-            go(angle_left, angle_right, center_max, .1f);
-            go(left_min, right_min, angle_center, .5f);
-            go(angle_left, angle_right, center_min, .1f);
-            go(left_max, right_max, angle_center, .5f);
-        }
-        */
+    go(zero[0], zero[1], zero[2]+range[2], .1f);
+    _delay_ms(500);
+    go(zero[0], zero[1], zero[2], .5f);
+    _delay_ms(1500);
+    go(zero[0], zero[1], zero[2]-range[2], .1f);
+    _delay_ms(500);
+    go(zero[0], zero[1], zero[2], .5f);
+    _delay_ms(1500);
 
-          go(zero_pos[0], zero_pos[1], zero_pos[2]+max_off[2], .25f);
-          go(zero_pos[0], zero_pos[1], zero_pos[2]-min_off[2], .25f);
-          go(zero_pos[0], zero_pos[1], zero_pos[2]+max_off[2], .25f);
-          go(zero_pos[0], zero_pos[1], zero_pos[2]-min_off[2], .25f);
+    float scale = (.57143f - .028)/.5f;
 
-          go(zero_pos[0], zero_pos[1]+max_off[1],   zero_pos[2]-min_off[2], .25f);
-          go(zero_pos[0], zero_pos[1]-min_off[1]/2, zero_pos[2]-min_off[2], .25f);
-
-          go(zero_pos[0], zero_pos[1], zero_pos[2]-min_off[2], .25f);
-          go(zero_pos[0], zero_pos[1], zero_pos[2]+max_off[2], .25f);
-          go(zero_pos[0], zero_pos[1], zero_pos[2]-min_off[2], .25f);
-          go(zero_pos[0], zero_pos[1], zero_pos[2]+max_off[2], .25f);
-
-          go(zero_pos[0]+max_off[0], zero_pos[1],   zero_pos[2]+max_off[2], .25f);
-          go(zero_pos[0]-min_off[0]/2, zero_pos[1], zero_pos[2]+max_off[2], .25f);
-
-
-/*
-        go(angle_left, angle_right, center_max, .1f);
-        go(left_min, right_max, angle_center, .5f);
-        go(angle_left, angle_right, center_min, .1f);
-        go(left_max, right_min, angle_center, .5f);
-        _delay_ms(5);
-*/
-        if (millis-start>5*1000) break;
+#if 0
+    for (uint8_t j=0; j<8; j++) {
+        go(zero[0], zero[1], zero[2]+range[2], .4f*scale);
+        go(zero[0], zero[1], zero[2]-range[2], .1f*scale);
     }
-    set_servo_angles(zero_pos[0], zero_pos[1], zero_pos[2]);
-//  set_servo_angles(45, 45, 45);
-    while (1);
+    for (uint8_t j=0; j<2; j++) {
+        go(zero[0], zero[1]-range[1], zero[2]-range[2], .4f*scale);
+        go(zero[0], zero[1]+range[1], zero[2]-range[2], .1f*scale);
+    }
+    for (uint8_t j=0; j<2; j++) {
+        go(zero[0], zero[1], zero[2]-range[2], .4f*scale);
+        go(zero[0], zero[1], zero[2]+range[2], .1f*scale);
+    }
+    for (uint8_t j=0; j<2; j++) {
+        go(zero[0]+range[0], zero[1], zero[2]+range[2], .4f*scale);
+        go(zero[0]-range[0], zero[1], zero[2]+range[2], .1f*scale);
+    }
+    // 14 beats
+    go(zero[0], zero[1], zero[2], .33f*scale);
+    advance(scale);
+    go(zero[0], zero[1], zero[2], .33f*scale);
+    retreat(scale);
+    go(zero[0], zero[1], zero[2], .33f*scale);
+    // 20 beats
+#else
+    for (uint8_t j=0; j<8; j++) {
+        go(zero[0], zero[1], zero[2]+range[2], .4f*scale);
+        go(zero[0], zero[1], zero[2]-range[2], .1f*scale);
+    }
+    for (uint8_t j=0; j<2; j++) {
+        go(zero[0], zero[1]-range[1], zero[2]-range[2], .4f*scale);
+        go(zero[0], zero[1]+range[1], zero[2]-range[2], .1f*scale);
+    }
+    go(zero[0], zero[1], zero[2], .33f*scale);
+    turn_left(scale);
+    go(zero[0], zero[1], zero[2], .33f*scale);
+    turn_right(scale);
+    go(zero[0], zero[1], zero[2], .33f*scale);
+    for (uint8_t j=0; j<2; j++) {
+        go(zero[0], zero[1], zero[2]-range[2], .4f*scale);
+        go(zero[0], zero[1], zero[2]+range[2], .1f*scale);
+    }
+    for (uint8_t j=0; j<2; j++) {
+        go(zero[0]+range[0], zero[1], zero[2]+range[2], .4f*scale);
+        go(zero[0]-range[0], zero[1], zero[2]+range[2], .1f*scale);
+    }
+#endif
+
+    go(zero[0], zero[1], zero[2], .33f*scale);
+    advance(scale);
+//  go(zero[0], zero[1], zero[2], .33f*scale);
+    advance(scale);
+    _delay_ms(3*1000);
+
+    go(zero[0], zero[1], zero[2], .5f);
+    while (1) _delay_ms(10);
 
     return 0;
 }
