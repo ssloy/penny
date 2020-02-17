@@ -10,7 +10,7 @@ const uint8_t  zero[3] = {45, 50, 40};     // zero position of the servo (degree
 const uint8_t range[3] = {25, 25, 20};     // the servos are allowed to move in the zero[i] +- range[i] interval
 const uint16_t distance_threshold = 768;   // ADC threshold for obstacle detection, in principle atmega8 ADC returns [0,1023] values, but the schematics imposes a narrower interval
 
-// movement plannifier variables
+// movement planner variables
 volatile uint8_t     pos[3] = {45, 45, 45};        // current servo position            (degrees)
 volatile uint8_t pos_beg[3] = {45, 45, 45};        // starting position for each servo  (degrees)
 volatile uint8_t pos_end[3] = {45, 45, 45};        // goal position for each servo      (degrees)
@@ -96,10 +96,20 @@ inline float movement_phase(uint8_t servo) {
 }
 
 // update PWM servo signals according to the movement planning
-inline void movement_plannifier() {
+inline void movement_planner() {
     for (uint8_t i=0; i<3; i++)
         pos[i] = CLAMP(pos_beg[i] + (pos_end[i] - pos_beg[i])*movement_phase(i), zero[i]-range[i], zero[i]+range[i]);
     update_servo_timers();
+}
+
+// copy the step of the sequence to the movement planner variables
+inline void plan_next_movement(uint8_t step, int8_t sequence[][3]) {
+    for (uint8_t i=0; i<3; i++) {                           // for each of 3 servos
+        pos_beg[i] = pos[i];                                // we go from pos_beg[i]
+        pos_end[i] = zero[i] + range[i]*sequence[step][i];  // to pos_end[i],
+        time_start[i] = millis;                             // the movement is initiated at time_start[i] (right now)
+        duration[i] = step_time[step];                      // and should last for step_time[step]
+    }
 }
 
 // are we done moving?
@@ -151,16 +161,10 @@ int main(void) {
             } else if (!lobst && robst) {
                 sequence = (int8_t(*)[3])turn_left_sequence; // obstacle on the right => turn left
             }
-
             step = (step + 1) % steps_per_sequence; // if previous movement is complete, then perform the next step
-            for (uint8_t i=0; i<3; i++) {                           // for each of 3 servos
-                pos_beg[i] = pos[i];                                // we go from pos_beg[i]
-                pos_end[i] = zero[i] + range[i]*sequence[step][i];  // to pos_end[i],
-                time_start[i] = millis;                             // the movement is initiated at time_start[i] (right now)
-                duration[i] = step_time[step];                      // and should last for step_time[step]
-            }
+            plan_next_movement(step, sequence); // execute next movement
         }
-        movement_plannifier(); // update the servos position according to the planning
+        movement_planner(); // update the servos position according to the planning
 
         _delay_ms(1);
         if (millis-start>60L*1000L) break; // 60 seconds total running time
