@@ -6,13 +6,8 @@ Check Penny dancing to funky music (clickable):
 
 # Credits
 
-Penny has two elder sisters, Penny and Penny. Note that I have no hardware contributions at all, I simply want this wonderful robot to be easy to clone. The original Penny#1 is created by [jerz](https://www.robotshop.com/community/robots/show/penny):
+Penny has two elder sisters, [Penny](https://youtu.be/7Py03SH5DbE) and [Penny](https://youtu.be/PiVTC8JhZTQ). Note that I have no hardware contributions, all I did is to gather the information, assemble things and write the firmware. I want this wonderful robot to be easy to clone, therefore I created this repository. The original Penny#1 is created by [Jeremy Zimmer](https://www.robotshop.com/community/robots/show/penny). The wiring being cumbersome and cheapduino being discontinued, Dennis van Elteren has designed the motherboard that I also use. Thus Penny#2 was born. Here I present you Penny#3.
 
-[![Penny #1](https://img.youtube.com/vi/7Py03SH5DbE/0.jpg)](https://youtu.be/7Py03SH5DbE)
-
-The wiring being cumbersome and cheapduino being discontinued, Dennis van Elteren has designed the motherboard that I also use. Thus Penny#2 was born:
-
-[![Penny #2](https://img.youtube.com/vi/PiVTC8JhZTQ/0.jpg)](https://youtu.be/PiVTC8JhZTQ)
 
 # How to clone
 
