@@ -1,0 +1,21 @@
+---------------------------------------------------------------------------
+NCDrill File Report For: penny.PcbDoc   8-1-2014  16:49:01
+---------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : penny.TXT
+EIA File   : penny.DRL
+
+Tool         Hole Size           Hole Type     Hole Count Plated       Tool Travel
+---------------------------------------------------------------------------
+T1        0.4mm (15.748mil)        Round          14               37.71 mm (1.48 Inch)
+T2        0.5mm (19.685mil)        Round          16               120.52 mm (4.74 Inch)
+T3        0.65mm (25.591mil)       Round          9                17.30 mm (0.68 Inch)
+T4        0.89mm (35.039mil)       Round          2                5.08 mm (0.20 Inch)
+T5        0.9mm (35.433mil)        Round          26               145.87 mm (5.74 Inch)
+T6        1mm (39.37mil)           Round          8                24.34 mm (0.96 Inch)
+T7        2.6mm (102.362mil)       Round          2                42.94 mm (1.69 Inch)
+---------------------------------------------------------------------------
+Totals                                            77               393.76 mm (15.50 Inch)
+
+Total Processing Time (hh:mm:ss) : 00:00:00
