@@ -4,13 +4,11 @@ Check Penny dancing to funky music (clickable):
 
 [![Penny dances](https://img.youtube.com/vi/quMe5CEoOok/0.jpg)](https://youtu.be/quMe5CEoOok)
 
-# Credits
-
-Penny has two elder sisters, [Penny](https://youtu.be/7Py03SH5DbE) and [Penny](https://youtu.be/PiVTC8JhZTQ). Note that I have no hardware contributions, all I did is to gather the information, assemble things and write the firmware. I want this wonderful robot to be easy to clone, therefore I created this repository. The original Penny#1 is created by [Jeremy Zimmer](https://www.robotshop.com/community/robots/show/penny). The wiring being cumbersome and cheapduino being discontinued, Dennis van Elteren has designed the motherboard that I also use. Thus Penny#2 was born. Here I present you Penny#3. While I have Dennis' approbation to publish his files, I failed to contact Jeremy. The software, however is distributed under the DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE.
+## Credits
+Penny has two elder sisters, [Penny](https://youtu.be/7Py03SH5DbE) and [Penny](https://youtu.be/PiVTC8JhZTQ). Note that I have no hardware contributions, all I did is to gather the information, assemble things and write the firmware. I want this wonderful robot to be easy to clone, therefore I created this repository. The original Penny#1 is created by [Jeremy Zimmer](https://www.robotshop.com/community/robots/show/penny). The wiring being cumbersome and cheapduino being discontinued, Dennis van Elteren has designed the motherboard that I also use. Thus Penny#2 was born. Here I present you Penny#3. While I have Dennis' sanction to publish his files, I failed to contact Jeremy. The software, however is distributed under the DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE.
 
 # How to clone
 ## The body
-
 It is quite straightforward, if you have a printer, just print it. All the body parts are shown here:
 
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/penny-body-print.jpg)
@@ -19,7 +17,6 @@ When assembled, it should look like this beast:
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/penny-body-model.jpg)
 
 ## The motherboard
-
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/pcb-mcu.png)
 
 ### Bill of materials
@@ -35,8 +32,18 @@ Printing the body costs next to nothing if you have a 3d printer. Here are the m
 
 
 ### The proximity sensor
-
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/pcb-proximity-sensor.png)
 
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/proximity-sensor.gif)
 
+# Wishlist
+If you are a good soul willing to create a V2 of the motherboard, you are very welcome to do so. Here are the things that I'd like to be fixed/added/modified in the motherboard:
+* The main thing is the on/off switch to cut off servo motors during flashing;
+* Remove the crystal, internal RC should be just enough;
+* Replace through-hole components by their SMD analogs;
+* Propose good (small and foolproof) connectors instead of pin headers and optimize their placement;
+* IR LEDs pads are very hard to reach under the center servo. The only viable option with the V1 motherboard is to solder the wires;
+* Move a little bit the big capacitor. I had to incline it, otherwise the screw in center legs would destroy it;
+* Add test pads easy to access with an oscilloscope;
+* Add a couple of debug LEDs;
+* Create good soldering points for unused ATMega8 pins for debugging and further extension.
