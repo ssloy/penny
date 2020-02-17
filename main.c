@@ -6,11 +6,15 @@
 
 volatile uint32_t millis = 0; // an approximation of milliseconds elapsed since boot
 
-const uint8_t zero[3] = {45, 50, 40};
-const uint8_t range[3] = {25, 25, 20};
+const uint8_t  zero[3] = {45, 50, 40}; // zero position of the servo (degrees)
+const uint8_t range[3] = {25, 25, 20}; // the servos are allowed to move in the zero[i] +- range[i] interval
 
-volatile uint8_t cur_pos[3] = {45, 45, 45};
-
+// movement plannifier variables
+volatile uint8_t     pos[3] = {45, 45, 45};        // current servo position            (degrees)
+volatile uint8_t pos_beg[3] = {45, 45, 45};        // starting position for each servo  (degrees)
+volatile uint8_t pos_end[3] = {45, 45, 45};        // goal position for each servo      (degrees)
+volatile uint32_t time_start[3] = {0, 0, 0};       // beginning of the motion timestamp (milliseconds)
+volatile float      duration[3] = {1.f, 1.f, 1.f}; // motion duration (sec)
 
 // The servos take a 50 Hz PWM signal; 1 ms minimum pulse width (0 deg), 2 ms maximum pulse width (90 deg).
 // I have three servos, two of them are attached to a 16 bit timer (timer1), and the third one to a 8 bit timer (timer2).
@@ -31,10 +35,10 @@ volatile uint8_t cur_pos[3] = {45, 45, 45};
 // right servo:  OCR1B = 1500
 // center servo: OCR2  = 1500/16
 
-void set_servo_angles(uint8_t left, uint8_t right, uint8_t center) {
-    OCR1A =  1000 + ((uint16_t)left  *100)/9;
-    OCR1B =  1000 + ((uint16_t)right *100)/9;
-    OCR2  = (1000 + ((uint16_t)center*100)/9)/16;
+void set_servo_angles() {
+    OCR1A =  1000 + ((uint16_t)pos[0]*100)/9;     //  left
+    OCR1B =  1000 + ((uint16_t)pos[1]*100)/9;     //  right
+    OCR2  = (1000 + ((uint16_t)pos[2]*100)/9)/16; //  center
 }
 
 inline void init_timer1() {
@@ -52,7 +56,7 @@ inline void init_timer2() {
 void init_servos() {
     init_timer1();
     init_timer2();
-    set_servo_angles(45, 45, 45); // put the servos in the middle position
+    set_servo_angles(zero); // put the servos in the middle position
     TIMSK |= (1<<TICIE1) | (1<<OCIE2); // initialize interrupts, activate
     sei();
 }
@@ -77,21 +81,18 @@ uint16_t adc_read(uint8_t ch) {
 #define MAX(a, b)            (((a) > (b)) ? (a) : (b))
 #define CLAMP(x, low, high)  (MIN(MAX((x), (low)), (high)))
 
-void go(uint8_t lgoal, uint8_t rgoal, uint8_t cgoal, float duration) {
-    uint8_t start_pos[3] = {cur_pos[0], cur_pos[1], cur_pos[2]};
-    uint8_t goal_pos[3] = {lgoal, rgoal, cgoal};
-    uint32_t time_start = millis;
-    while (1) {
-        float t = (millis - time_start)/1000.f;
-        for (uint8_t i=0; i<3; i++) 
-            cur_pos[i] = CLAMP(start_pos[i] + (goal_pos[i] - start_pos[i])*t/duration, zero[i]-range[i], zero[i]+range[i]);
-        set_servo_angles(cur_pos[0], cur_pos[1], cur_pos[2]);
-        _delay_ms(5);
-        if (t>duration) break;
+inline void movement_plannifier() {
+    for (uint8_t i=0; i<3; i++) {
+        float t = (millis - time_start[i])/1000.f;
+        pos[i] = CLAMP(pos_beg[i] + (pos_end[i] - pos_beg[i])*t/duration[i], zero[i]-range[i], zero[i]+range[i]);
     }
-    for (uint8_t i=0; i<3; i++) cur_pos[i] = goal_pos[i];
+    set_servo_angles();
 }
 
+void advance() {
+}
+
+/*
 void advance(float scale) {
     go(zero[0]-range[0], zero[1]-range[1], zero[2]+range[2],  .33f*scale);
     go(zero[0]-range[0], zero[1]-range[1], zero[2]-range[2], .166f*scale);
@@ -119,12 +120,12 @@ void retreat(float scale) {
     go(zero[0]+range[0], zero[1]+range[1], zero[2]+range[2],  .33f*scale);
     go(zero[0]+range[0], zero[1]+range[1], zero[2]-range[2], .166f*scale);
 }
-
+*/
 
 
 int main(void) {
-    DDRC &= ~_BV(4); // input: left  phototransistor
-    DDRC &= ~_BV(5); // input: right phototransistor
+    DDRC &= ~_BV(4); // input: right phototransistor
+    DDRC &= ~_BV(5); // input: left  phototransistor
     DDRC |=  _BV(0); // output: IR LED control
     DDRB |=  _BV(1); // output: left servo
     DDRB |=  _BV(2); // output: right servo
@@ -132,95 +133,39 @@ int main(void) {
     PORTC |= _BV(0); // set the LED control pin to HIGH
     init_servos();
 
-/*
-    uint16_t adc_left_eye  = adc_read(4);
-    uint16_t adc_right_eye = adc_read(5);
+    for (uint8_t i=0; i<3; i++) pos[i] = zero[i];
+    set_servo_angles();
+    _delay_ms(2000);
 
-    uint8_t angle_left  = 0;
-    uint8_t angle_right = 0;
+    uint16_t adc_left_eye  = adc_read(5);
+    uint16_t adc_right_eye = adc_read(4);
     uint32_t start = millis;
     while (1) {
-        adc_left_eye  = adc_left_eye *.99 + adc_read(4)*.01;
-        adc_right_eye = adc_right_eye*.99 + adc_read(5)*.01;
+        adc_left_eye  = adc_left_eye *.99 + adc_read(5)*.01; // low-pass filter on the ADC readings
+        adc_right_eye = adc_right_eye*.99 + adc_read(4)*.01;
 
-        angle_left  = (adc_left_eye <256 ? 45 : 75);
-        angle_right = (adc_right_eye<256 ? 45 : 75);
-        set_servo_angles(angle_left, angle_right, 45);
+        if (adc_left_eye>768) {
+            pos[0] = zero[0]-range[0];
+        } else {
+            pos[0] = zero[0]+range[0];
+        }
 
+        if (adc_right_eye>768) {
+            pos[1] = zero[1]-range[1];
+        } else {
+            pos[1] = zero[1]+range[1];
+        }
+
+        set_servo_angles();
         _delay_ms(1);
+        if (millis-start>50*1000) break;
     }
-*/
 
-    set_servo_angles(zero[0], zero[1], zero[2]);
-    _delay_ms(5000);
-
-    go(zero[0], zero[1], zero[2]+range[2], .1f);
-    _delay_ms(500);
-    go(zero[0], zero[1], zero[2], .5f);
-    _delay_ms(1500);
-    go(zero[0], zero[1], zero[2]-range[2], .1f);
-    _delay_ms(500);
-    go(zero[0], zero[1], zero[2], .5f);
-    _delay_ms(1500);
-
-    float scale = (.57143f - .028)/.5f;
-
-#if 0
-    for (uint8_t j=0; j<8; j++) {
-        go(zero[0], zero[1], zero[2]+range[2], .4f*scale);
-        go(zero[0], zero[1], zero[2]-range[2], .1f*scale);
-    }
-    for (uint8_t j=0; j<2; j++) {
-        go(zero[0], zero[1]-range[1], zero[2]-range[2], .4f*scale);
-        go(zero[0], zero[1]+range[1], zero[2]-range[2], .1f*scale);
-    }
-    for (uint8_t j=0; j<2; j++) {
-        go(zero[0], zero[1], zero[2]-range[2], .4f*scale);
-        go(zero[0], zero[1], zero[2]+range[2], .1f*scale);
-    }
-    for (uint8_t j=0; j<2; j++) {
-        go(zero[0]+range[0], zero[1], zero[2]+range[2], .4f*scale);
-        go(zero[0]-range[0], zero[1], zero[2]+range[2], .1f*scale);
-    }
-    // 14 beats
-    go(zero[0], zero[1], zero[2], .33f*scale);
-    advance(scale);
-    go(zero[0], zero[1], zero[2], .33f*scale);
-    retreat(scale);
-    go(zero[0], zero[1], zero[2], .33f*scale);
-    // 20 beats
-#else
-    for (uint8_t j=0; j<8; j++) {
-        go(zero[0], zero[1], zero[2]+range[2], .4f*scale);
-        go(zero[0], zero[1], zero[2]-range[2], .1f*scale);
-    }
-    for (uint8_t j=0; j<2; j++) {
-        go(zero[0], zero[1]-range[1], zero[2]-range[2], .4f*scale);
-        go(zero[0], zero[1]+range[1], zero[2]-range[2], .1f*scale);
-    }
-    go(zero[0], zero[1], zero[2], .33f*scale);
-    turn_left(scale);
-    go(zero[0], zero[1], zero[2], .33f*scale);
-    turn_right(scale);
-    go(zero[0], zero[1], zero[2], .33f*scale);
-    for (uint8_t j=0; j<2; j++) {
-        go(zero[0], zero[1], zero[2]-range[2], .4f*scale);
-        go(zero[0], zero[1], zero[2]+range[2], .1f*scale);
-    }
-    for (uint8_t j=0; j<2; j++) {
-        go(zero[0]+range[0], zero[1], zero[2]+range[2], .4f*scale);
-        go(zero[0]-range[0], zero[1], zero[2]+range[2], .1f*scale);
-    }
-#endif
-
-    go(zero[0], zero[1], zero[2], .33f*scale);
-    advance(scale);
-//  go(zero[0], zero[1], zero[2], .33f*scale);
-    advance(scale);
-    _delay_ms(3*1000);
-
-    go(zero[0], zero[1], zero[2], .5f);
+    for (uint8_t i=0; i<3; i++) pos[i] = zero[i];
+    set_servo_angles();
     while (1) _delay_ms(10);
+
+
 
     return 0;
 }
