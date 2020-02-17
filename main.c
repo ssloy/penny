@@ -6,15 +6,16 @@
 
 volatile uint32_t millis = 0; // an approximation of milliseconds elapsed since boot
 
-const uint8_t  zero[3] = {45, 50, 40}; // zero position of the servo (degrees)
-const uint8_t range[3] = {25, 25, 20}; // the servos are allowed to move in the zero[i] +- range[i] interval
+const uint8_t  zero[3] = {45, 50, 40};     // zero position of the servo (degrees)
+const uint8_t range[3] = {25, 25, 20};     // the servos are allowed to move in the zero[i] +- range[i] interval
+const uint16_t distance_threshold = 768;   // ADC threshold for obstacle detection
 
 // movement plannifier variables
 volatile uint8_t     pos[3] = {45, 45, 45};        // current servo position            (degrees)
 volatile uint8_t pos_beg[3] = {45, 45, 45};        // starting position for each servo  (degrees)
 volatile uint8_t pos_end[3] = {45, 45, 45};        // goal position for each servo      (degrees)
 volatile uint32_t time_start[3] = {0, 0, 0};       // beginning of the motion timestamp (milliseconds)
-volatile float      duration[3] = {1.f, 1.f, 1.f}; // motion duration (sec)
+volatile float      duration[3] = {.1f, .1f, .1f}; // motion duration (sec)
 
 // The servos take a 50 Hz PWM signal; 1 ms minimum pulse width (0 deg), 2 ms maximum pulse width (90 deg).
 // I have three servos, two of them are attached to a 16 bit timer (timer1), and the third one to a 8 bit timer (timer2).
@@ -35,7 +36,7 @@ volatile float      duration[3] = {1.f, 1.f, 1.f}; // motion duration (sec)
 // right servo:  OCR1B = 1500
 // center servo: OCR2  = 1500/16
 
-void set_servo_angles() {
+void update_servo_timers() {
     OCR1A =  1000 + ((uint16_t)pos[0]*100)/9;     //  left
     OCR1B =  1000 + ((uint16_t)pos[1]*100)/9;     //  right
     OCR2  = (1000 + ((uint16_t)pos[2]*100)/9)/16; //  center
@@ -56,7 +57,7 @@ inline void init_timer2() {
 void init_servos() {
     init_timer1();
     init_timer2();
-    set_servo_angles(zero); // put the servos in the middle position
+    update_servo_timers();
     TIMSK |= (1<<TICIE1) | (1<<OCIE2); // initialize interrupts, activate
     sei();
 }
@@ -86,42 +87,24 @@ inline void movement_plannifier() {
         float t = (millis - time_start[i])/1000.f;
         pos[i] = CLAMP(pos_beg[i] + (pos_end[i] - pos_beg[i])*t/duration[i], zero[i]-range[i], zero[i]+range[i]);
     }
-    set_servo_angles();
+    update_servo_timers();
 }
 
-void advance() {
+inline uint8_t is_movement_finished() {
+    uint8_t finished = 1;
+    for (uint8_t i=0; i<3; i++) {
+        float t = (millis - time_start[i])/1000.f;
+        finished &= (t/duration[i]>=1.f);
+    }
+    return finished;
 }
 
-/*
-void advance(float scale) {
-    go(zero[0]-range[0], zero[1]-range[1], zero[2]+range[2],  .33f*scale);
-    go(zero[0]-range[0], zero[1]-range[1], zero[2]-range[2], .166f*scale);
-    go(zero[0]+range[0], zero[1]+range[1], zero[2]-range[2],  .33f*scale);
-    go(zero[0]+range[0], zero[1]+range[1], zero[2]+range[2], .166f*scale);
-}
+const int8_t    advance_sequence[4][3] = {{-1, -1,  1}, {-1, -1, -1}, { 1,  1, -1}, { 1,  1,  1}};
+const int8_t    retreat_sequence[4][3] = {{-1, -1, -1}, {-1, -1,  1}, { 1,  1,  1}, { 1,  1, -1}};
+const int8_t  turn_left_sequence[4][3] = {{ 1, -1,  1}, { 1, -1, -1}, {-1,  1, -1}, {-1,  1,  1}};
+const int8_t turn_right_sequence[4][3] = {{-1,  1,  1}, {-1,  1, -1}, { 1, -1, -1}, { 1, -1,  1}};
 
-void turn_left(float scale) {
-    go(zero[0]+range[0], zero[1]-range[1], zero[2]+range[2],  .33f*scale);
-    go(zero[0]+range[0], zero[1]-range[1], zero[2]-range[2], .166f*scale);
-    go(zero[0]-range[0], zero[1]+range[1], zero[2]-range[2],  .33f*scale);
-    go(zero[0]-range[0], zero[1]+range[1], zero[2]+range[2], .166f*scale);
-}
-
-void turn_right(float scale) {
-    go(zero[0]-range[0], zero[1]+range[1], zero[2]+range[2],  .33f*scale);
-    go(zero[0]-range[0], zero[1]+range[1], zero[2]-range[2], .166f*scale);
-    go(zero[0]+range[0], zero[1]-range[1], zero[2]-range[2],  .33f*scale);
-    go(zero[0]+range[0], zero[1]-range[1], zero[2]+range[2], .166f*scale);
-}
-
-void retreat(float scale) {
-    go(zero[0]-range[0], zero[1]-range[1], zero[2]-range[2],  .33f*scale);
-    go(zero[0]-range[0], zero[1]-range[1], zero[2]+range[2], .166f*scale);
-    go(zero[0]+range[0], zero[1]+range[1], zero[2]+range[2],  .33f*scale);
-    go(zero[0]+range[0], zero[1]+range[1], zero[2]-range[2], .166f*scale);
-}
-*/
-
+const float step_durations[4] = {.33f, .166f, .33f, .166f};
 
 int main(void) {
     DDRC &= ~_BV(4); // input: right phototransistor
@@ -134,8 +117,11 @@ int main(void) {
     init_servos();
 
     for (uint8_t i=0; i<3; i++) pos[i] = zero[i];
-    set_servo_angles();
+    update_servo_timers();
     _delay_ms(2000);
+
+    int8_t (*sequence)[3] = advance_sequence;
+    uint8_t step = 3;
 
     uint16_t adc_left_eye  = adc_read(5);
     uint16_t adc_right_eye = adc_read(4);
@@ -143,29 +129,37 @@ int main(void) {
     while (1) {
         adc_left_eye  = adc_left_eye *.99 + adc_read(5)*.01; // low-pass filter on the ADC readings
         adc_right_eye = adc_right_eye*.99 + adc_read(4)*.01;
+        uint8_t lobst = adc_left_eye  < distance_threshold; // obstacle on the left?
+        uint8_t robst = adc_right_eye < distance_threshold; // obstacle on the right?
 
-        if (adc_left_eye>768) {
-            pos[0] = zero[0]-range[0];
-        } else {
-            pos[0] = zero[0]+range[0];
+        if (is_movement_finished()) {
+            if (!lobst && !robst) {
+                sequence = advance_sequence;
+            } else if (lobst && robst) {
+                sequence = retreat_sequence;
+            } else if (lobst && !robst) {
+                sequence = turn_right_sequence;
+            } else {
+                sequence = turn_left_sequence;
+            }
+
+            step = (step + 1)%4;
+            for (uint8_t i=0; i<3; i++) {
+                pos_beg[i] = pos[i];
+                pos_end[i] = zero[i] + range[i]*sequence[step][i];
+                time_start[i] = millis;
+                duration[i] = step_durations[step];
+            }
         }
+        movement_plannifier();
 
-        if (adc_right_eye>768) {
-            pos[1] = zero[1]-range[1];
-        } else {
-            pos[1] = zero[1]+range[1];
-        }
-
-        set_servo_angles();
         _delay_ms(1);
-        if (millis-start>50*1000) break;
+        if (millis-start>60L*1000L) break;
     }
 
     for (uint8_t i=0; i<3; i++) pos[i] = zero[i];
-    set_servo_angles();
+    update_servo_timers();
     while (1) _delay_ms(10);
-
-
 
     return 0;
 }
