@@ -22,10 +22,6 @@ Penny has two elder sisters, [Penny](https://youtu.be/7Py03SH5DbE) and [Penny](h
 Printing the body costs next to nothing if you have a 3d printer. Here are the main things you need to build the bot:
 * The motherboard. You can either etch it by yourself, or you can check chinese factories, any normal day it costs ~10€ / 10 pcs (shipping included), with discounts it can cost 2€ / 10 pcs. You can find an alternative like cheapduino or similar, because the schematics is very, very basic.
 * [SG90 9G micro servo, 3 * 1.47€ / piece](https://www.aliexpress.com/item/4000595327297.html)
-
-**NB:** When bying 9g servos, do not forget that they come in different sizes, Penny is designed for the low profile plastic gears servos. It will work with other servos, but you might need to update SketchUp files for it. Moreover, metal gears are an overkill here.
-
-![](https://raw.githubusercontent.com/ssloy/penny/master/doc/9g-servos-comparison.jpg)
 * [4x AAA battery holder, 1.34€ / piece](https://www.aliexpress.com/item/33049875634.html)
 * [ATMega8A-AU (QFP-32), 1€ / piece](https://www.aliexpress.com/item/32557093316.html)
 * [IR LED + IR phototransistor, 0.20€ / pair](https://www.aliexpress.com/item/32849824664.html)
@@ -33,6 +29,9 @@ Printing the body costs next to nothing if you have a 3d printer. Here are the m
 * [2n3904 transistor, 3 * 0.01€ / piece](https://www.aliexpress.com/item/32494899564.html)
 * You will need wires, heat shrink, screws, pin headers, few 0805 resistors and capacitors. All electronic components are listed in the [hardware/motherboard/BOM.html](https://github.com/ssloy/penny/blob/master/hardware/motherboard/BOM.html) file.
 
+**NB:** When bying 9g servos, do not forget that they come in different sizes, Penny is designed for the low profile plastic gears servos. It will work with other servos, but you might need to update SketchUp files for it. Moreover, metal gears are an overkill here.
+
+![](https://raw.githubusercontent.com/ssloy/penny/master/doc/9g-servos-comparison.jpg)
 
 ## The body
 It is quite straightforward, if you have a printer, just print it. You can find the files in the [hardware/body/](https://github.com/ssloy/penny/tree/master/hardware/body) folder. All the body parts are shown here:
