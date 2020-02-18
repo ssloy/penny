@@ -14,7 +14,6 @@ Penny is a tremendous fun!
 
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/A_playing_with_penny.jpg)
 
-
 ## Credits
 Penny has two elder sisters, [Penny](https://youtu.be/7Py03SH5DbE) and [Penny](https://youtu.be/PiVTC8JhZTQ). Note that I have no hardware contributions, all I did is to gather the information, assemble things and write the firmware. I want this wonderful robot to be easy to clone, therefore I created this repository. The original Penny#1 is created by [Jeremy Zimmer](https://www.robotshop.com/community/robots/show/penny). The wiring being cumbersome and cheapduino being discontinued, Dennis van Elteren has designed the motherboard that I also use. Thus Penny#2 was born. Here I present you Penny#3. While I have Dennis' sanction to publish his files, I failed to contact Jeremy. The software, however is distributed under the DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE.
 
@@ -68,3 +67,30 @@ If you are a good soul willing to create a V2 of the motherboard, you are very w
 * Create good soldering points for unused ATMega8 pins for debugging and further extension.
 
 I guess that it would be a good idea to port the code to arduino environment for those who do not want to call avr-gcc directly. If you can do it, send me a pull request.
+
+# Firmware explained
+
+Penny can be programmed via arduino environment, but I find it quite obscure for such simple microcontrollers as ATMega8. Let us split the firmware comments into two parts: how to get the PWM working and how Penny plannifies her movements.
+
+## PWM generation
+
+The servos take a 50 Hz PWM signal; 1 ms minimum pulse width (0 deg), 2 ms maximum pulse width (90 deg). Penny has three servos, two of them are attached to a 16 bit timer (timer1), and the third one to a 8 bit timer (timer2). If I am not mistaken, arduino's Servo.h controls servomotors via software PWM, and I dislike that, therefore both timers are ticking in fast PWM mode.
+
+The microcontroller ticks at 8 MHz, and the timer1 ticks at 1 MHz (prescaler 8), and ICR1 provides the TOP value (20000), thus it restarts every 20 ms, providing a correct 50 Hz signal. OCR1A and OCR1B registers control microsecond pulse widths for the left and right servos.
+
+The problem comes with the center servo attached to a 8 bit timer2. It does not have a handy ICR1 analog, so the overflowing frequency is controlled via the prescaler only. There are no prescalers good enough to approximate 50 Hz, here is an idea that lies somewhere inbetween a software and a hardware PWM:
+* we set timer2 to tick at prescaler 128, thus it overflows after 4.096 ms = 256 * 128/(8 * 10^6).
+* At the overflow we disable the timer2, so it is a one shot pulse.
+* At the timer1 capture interrupt we re-arm the (one-shot) timer2.
+
+4 ms is superior to a 2 ms max pulse width we need to control, and is well inferior to the 20 ms re-arming beat. To sum up, let us say we want to put all three servos to the middle position (1.5 ms pulse width). We need to do the following:
+```c
+OCR1A = 1500;    // left servo
+OCR1B = 1500;    // right servo
+OCR2  = 1500/16; // center servo
+```
+## Movement planner
+
+
+## Obstacle detection
+
