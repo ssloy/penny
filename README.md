@@ -20,15 +20,22 @@ Penny has two elder sisters, [Penny](https://youtu.be/7Py03SH5DbE) and [Penny](h
 
 # How to clone
 ## The body
-It is quite straightforward, if you have a printer, just print it. All the body parts are shown here:
+It is quite straightforward, if you have a printer, just print it. You can find the files in the [hardware/body/](https://github.com/ssloy/penny/tree/master/hardware/body) folder. All the body parts are shown here:
 
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/penny-body-print.jpg)
 
-When assembled, it should look like this beast:
+With my 1mm nozzle the prints were completed in a couple of hours. When assembled, it should look like this beast:
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/penny-body-model.jpg)
 
 ## The motherboard
+
+The motherboard is pretty basic. It has an ATMega8 mcu and the proximity sensor circuit, nothing else. Here is the brain:
+
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/pcb-mcu.png)
+
+I recommend soldering the bare minimum to power up the processor, and to flash it to be sure that nothing is wrong with the fine soldering. At this stage the motherboard looks like this:
+
+![](https://raw.githubusercontent.com/ssloy/penny/master/doc/penny_motherboard_mcu.jpg)
 
 ### Bill of materials
 Printing the body costs next to nothing if you have a 3d printer. Here are the main things you need to build the bot:
