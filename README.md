@@ -83,7 +83,7 @@ Then light up the LED with a CR2032 or a similar battery, pand put it against th
 Verify that the voltage on the Q3 and Q4 collector pins drops as expected.
 Once the sensing unit is okay, try to find a good resistor value for the LEDs to obtain the behaivour you see on the above video.
 Note that it is important to put a heatshrink around both the LEDs and the phototransistors to cut off parasitic lights.
-Moreover, with heatshrink it fits neatly into the eyesockets. When soldering the 2n3904, I recommend to solder first the center pin, and only then the side pins, otherwise it is too easy to create hard to remove solder bridges. Personally I find these little basterds harder to solder than the microcontroller itself (but I am bad at soldering!).
+Moreover, with heatshrink it fits neatly into the eyesockets. When soldering the 2n3904, I recommend to solder first the center pin, and only then the side pins, otherwise it is too easy to create hard-to-remove solder bridges. Personally I find these little basterds harder to solder than the microcontroller itself (but I am bad at soldering!).
 
 If you fail to assemble the proximity sensor, or simply dislike it, there are plenty of options:
 
@@ -111,7 +111,20 @@ OCR1B = 1500;    // right servo
 OCR2  = 1500/16; // center servo
 ```
 ## Movement planner
+Current servo position (in degrees, 0°-90°) is supposed to be stored in the `uint8_t pos[3]` array. When calling `update_servo_timers()`, the timers are updated according to the array.
 
+All the movements are planned as constant speed. To give an example, let us suppose that we want to move the left servo only. All we need to do is:
+* copy `pos[0]` to `pos_beg[0]`, it marks the starting point of the movement;
+* set `pos_end[0]` to the desired position (still in degrees);
+* set `time_start[0]` to the current timestamp (milliseconds since the boot);
+* and, finally, set `duration[0]` (in seconds). That is, the speed will be (pos_end[0]-pos_beg[0])/duration[0] degrees/sec.
+
+Then in an endless loop I invoke `movement_planner()`, it sets the goal `pos[]` according to the plan, and `update_servo_timers()` to update the PWM generator according to the `pos[]` position. 
+
+Note that all movement planner variables are stored in 3-element arrays, thus the movements (including the speeds) can be independent one from another. 
+Despite that, my current gait implementation uses synchronized movements of all three servos.
+
+## Gait sequences
 
 ## Obstacle detection
 
