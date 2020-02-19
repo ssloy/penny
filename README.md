@@ -92,7 +92,11 @@ If you fail to assemble the proximity sensor, or simply dislike it, there are pl
 * Or a basic binary proximity sensor based on a LM393 differential comparator: <br/> <img src="https://raw.githubusercontent.com/ssloy/penny/master/doc/lm393.jpg" width="320"/>
 
 # Firmware explained
-Penny can be programmed via arduino environment, but I find it quite obscure for such simple microcontrollers as ATMega8. Let us split the firmware comments into two parts: how to get the PWM working and how Penny plannifies her movements.
+Penny can be programmed via arduino environment, but I find it quite obscure for such simple microcontrollers as ATMega8. Let us split the firmware comments into four parts: 
+* [how to get the PWM working](https://github.com/ssloy/penny#pwm-generation)
+* [how Penny moves legs](https://github.com/ssloy/penny#movement-planner)
+* [gait sequences](https://github.com/ssloy/penny#gait-sequences)
+* [obstacle avoidance strategy](https://github.com/ssloy/penny#obstacle-detection)
 
 ## PWM generation
 The servos take a 50 Hz PWM signal; 1 ms minimum pulse width (0 deg), 2 ms maximum pulse width (90 deg). Penny has three servos, two of them are attached to a 16 bit timer (timer1), and the third one to a 8 bit timer (timer2). If I am not mistaken, arduino's Servo.h controls servomotors via software PWM, and I dislike that, therefore both timers are ticking in fast PWM mode.
