@@ -111,6 +111,14 @@ OCR1B = 1500;    // right servo
 OCR2  = 1500/16; // center servo
 ```
 ## Movement planner
+
+![](https://raw.githubusercontent.com/ssloy/penny/master/doc/servos-pos-range.jpg)
+
+```c
+const uint8_t  zero[3] = {45, 50, 40};     // zero position of the servo (degrees)
+const uint8_t range[3] = {25, 25, 20};     // the servos are allowed to move in the zero[i] +- range[i] interval
+```
+
 Current servo position (in degrees, 0°-90°) is supposed to be stored in the `uint8_t pos[3]` array. When calling `update_servo_timers()`, the timers are updated according to the array.
 
 All the movements are planned as constant speed. To give an example, let us suppose that we want to move the left servo only. All we need to do is:
