@@ -83,7 +83,7 @@ Then light up the LED with a CR2032 or a similar battery, pand put it against th
 Verify that the voltage on the Q3 and Q4 collector pins drops as expected.
 Once the sensing unit is okay, try to find a good resistor value for the LEDs to obtain the behaivour you see on the above video.
 Note that it is important to put a heatshrink around both the LEDs and the phototransistors to cut off parasitic lights.
-Moreover, with heatshrink it fits neatly into the eyesockets.
+Moreover, with heatshrink it fits neatly into the eyesockets. When soldering the 2n3904, I recommend to solder first the center pin, and only then the side pins, otherwise it is too easy to create hard to remove solder bridges. Personally I find these little basterds harder to solder than the microcontroller itself (but I am bad at soldering!).
 
 If you fail to assemble the proximity sensor, or simply dislike it, there are plenty of options:
 
