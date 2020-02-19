@@ -51,7 +51,7 @@ The motherboard itself is pretty basic. It has an ATMega8 microcontroller and th
 
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/pcb-mcu.png)
 
-I recommend soldering the bare minimum to power up the processor, and to flash it to be sure that nothing is wrong with the fine soldering. At this stage the motherboard looks like this:
+I recommend to solder the bare minimum to power up the processor, and to flash it to be sure that nothing is wrong with the delicate soldering. At this stage the motherboard looks like this:
 
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/penny_motherboard_mcu.jpg)
 
@@ -143,8 +143,36 @@ Despite that, my current gait implementation uses synchronized movements of all 
 
 ### Obstacle detection
 
+Recall that our proximity sensor provides a voltage that we read throuh channels 4 and 5 of the ADC. To cut off eventual spikes in the readings (esp. knowing that the servos induce tons of noise), at each loop I update the variables `adc_left_eye` and `adc_right_eye` as a low-pass filter over the ADC readings:
+```c
+        adc_left_eye  = adc_left_eye *.99 + adc_read(5)*.01; // low-pass filter on the ADC readings
+        adc_right_eye = adc_right_eye*.99 + adc_read(4)*.01;
+```
+The cutoff frequency can be set either by adjusting `_delay_ms()` inside the loop or by changing the `.99` and `1-.99` coefficients in the above code.
 
+The presense of an obstacle is detected by a simple threshold over the ADC readings (recall that C does not have `bool` type so I use `uint8_t` instead):
+```c
+        uint8_t lobst = adc_left_eye  < distance_threshold; // obstacle on the left?
+        uint8_t robst = adc_right_eye < distance_threshold; // obstacle on the right?
+```
 
+Then at the end of each step of the current sequence I verify if there is an obstacle present and change the plans accordingly. It is as simple as that!
+
+```c
+        if (is_movement_finished()) {
+            if (!lobst && !robst) {
+                sequence = advance_sequence; // no obstacles => go forward
+            } else if (lobst && robst) {
+                sequence = retreat_sequence; // obstacles left and right => go backwards
+            } else if (lobst && !robst) {
+                sequence = turn_right_sequence; // obstacle on the left => turn right
+            } else if (!lobst && robst) {
+                sequence = turn_left_sequence; // obstacle on the right => turn left
+            }
+            step = (step + 1) % steps_per_sequence; // if previous movement is complete, then perform the next step
+            plan_next_movement(step, sequence); // execute next movement
+        }
+```
 
 # Wishlist
 Any contribution is welcome! Send me your ideas; here is a list of things that I'd like to see improved:
