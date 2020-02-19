@@ -60,6 +60,10 @@ A safe option is to power Penny with 4 NiMH 1.2V rechargeable batteries,
 but I tried to run Penny with 4 standard alcaline batteries (6.4V in total) and it did not fry the brain.
 If you are going this way, I did warn you. It is at your own risk!**
 
+Here is a photo of the motherboard fully populated (with an exception of IR led/phototransistors):
+
+![](https://raw.githubusercontent.com/ssloy/penny/master/doc/penny_motherboard.jpg)
+
 ### The proximity sensor
 Penny has two eyes, each one is composed of an infrared LED and a corresponding phototransistor.
 The LED emits infrared light; this light propagates through the air and once it hits an object it is reflected back towards the phototransistor.
