@@ -12,7 +12,7 @@ In her current form, Penny only knows to walk; she can see (measure distance to)
 
 Penny is a tremendous fun!
 
-![](https://raw.githubusercontent.com/ssloy/penny/master/doc/A_playing_with_penny.jpg)
+<img src="https://raw.githubusercontent.com/ssloy/penny/master/doc/A_playing_with_penny.jpg" width="512"/>
 
 ## Credits
 Penny has two elder sisters, [Penny](https://youtu.be/7Py03SH5DbE) and [Penny](https://youtu.be/PiVTC8JhZTQ). Note that I have no hardware contributions, all I did is to gather the information, assemble things and write the firmware. I want this wonderful robot to be easy to clone, therefore I created this repository. The original Penny#1 is created by [Jeremy Zimmer](https://www.robotshop.com/community/robots/show/penny). The wiring being cumbersome and cheapduino being discontinued, Dennis van Elteren has designed the motherboard that I also use. Thus Penny#2 was born. Here I present you Penny#3. While I have Dennis' sanction to publish his files, I failed to contact Jeremy. The software, however is distributed under the DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE.
