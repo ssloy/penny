@@ -205,6 +205,7 @@ Then at the end of each step of the current sequence I verify if there is an obs
 Any contribution is welcome! Send me your ideas; here is a list of things that I'd like to see improved:
 
 ### software:
+* Propose me an elegant way to have more natural, life-like movements. Right now it moves by a linear interpolations between keyframes, it would be great if the robot was less shaky. Probably, non-linear interpolation between the same keyframes with pre-computed accelerations?
 * Propose new strategies of obstacle detection. Current implementation is very basic and aims a good source code readability rather then WOW robot's behaviour.
 * I guess that it would be a good idea to port the code to the arduino environment for those who do not want to call avr-gcc directly (or for those who are afraid of meddling with AVR registers). If you can do it, send me a pull request or fork the repository.
 
