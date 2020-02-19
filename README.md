@@ -138,8 +138,30 @@ Then in an endless loop I invoke `movement_planner()`, it sets the goal `pos[]` 
 ### Gait sequences
 Note that all movement planner variables are stored in 3-element arrays, thus the movements (including the speeds) can be independent one from another. 
 Despite that, my current gait implementation uses synchronized movements of all three servos.
+Let us see how Penny goes forward. To advance, Penny repeats in a loop 4 steps.
+All 4 steps are linear movements to following goal positions:
+* step 1: `{zero[0]-range[0], zero[1]-range[1], zero[2]+range[2]}`
+* step 2: `{zero[0]-range[0], zero[1]-range[1], zero[2]-range[2]}`
+* step 3: `{zero[0]+range[0], zero[1]+range[1], zero[2]-range[2]}`
+* step 4: `{zero[0]+range[0], zero[1]+range[1], zero[2]+range[2]}`
 
-
+We can express that as a 2d array (4 triplets of goal positions):
+```c
+const int8_t advance_sequence[4][3] = {{-1, -1,  1}, {-1, -1, -1}, { 1,  1, -1}, { 1,  1,  1}};
+```
+This array tells us that the goal position of the servo `i` at the step `step` is `zero[i] + range[i]*advance_sequence[step][i]`.
+Then the following code makes Penny to go forward indefinitely:
+```
+    uint8_t step = steps_per_sequence-1; // at the initialization stage the (previous) movement is considered to be complete, thus the next movement will be planned starting from the step 0
+    while (1) {
+        if (is_movement_finished()) {
+            step = (step + 1) % 4; // if previous movement is complete, then perform the next step; this variable loops as 0,1,2,3.
+            plan_next_movement(step, advance_sequence); // execute next movement
+        }
+        movement_planner(); // update the servos position according to the planning
+        _delay_ms(1);
+    }
+```
 
 ### Obstacle detection
 
