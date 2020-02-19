@@ -55,6 +55,10 @@ I recommend to solder the bare minimum to power up the processor, and to flash i
 
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/penny_motherboard_mcu.jpg)
 
+**N.B. ATMega8A datasheet specifies its operating voltage at 2.7-5.5V and absolute maximum 6V rating. 
+A safe option is to power Penny with 4 NiMH 1.2V rechargeable batteries, but I tried with 4 standard alcaline batteries (6.4V) in total and it did not fry the robot. 
+If you are going this way, I did warn you. It is at your own risk!**
+
 ### The proximity sensor
 Penny has two eyes, each one is composed of an infrared LED and a corresponding phototransistor.
 The LED emits infrared light; this light propagates through the air and once it hits an object it is reflected back towards the phototransistor.
