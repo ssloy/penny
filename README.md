@@ -53,6 +53,9 @@ I recommend soldering the bare minimum to power up the processor, and to flash i
 
 
 ### The proximity sensor
+
+![](https://raw.githubusercontent.com/ssloy/penny/master/doc/ir-leds-on-camera.gif)
+
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/pcb-proximity-sensor.png)
 
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/proximity-sensor.gif)
