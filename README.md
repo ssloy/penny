@@ -117,14 +117,15 @@ All the movements are planned as constant speed. To give an example, let us supp
 * copy `pos[0]` to `pos_beg[0]`, it marks the starting point of the movement;
 * set `pos_end[0]` to the desired position (still in degrees);
 * set `time_start[0]` to the current timestamp (milliseconds since the boot);
-* and, finally, set `duration[0]` (in seconds). That is, the speed will be (pos_end[0]-pos_beg[0])/duration[0] degrees/sec.
+* and, finally, set `duration[0]` (in seconds). That is, the speed will be `(pos_end[0]-pos_beg[0])/duration[0]` degrees/sec.
 
 Then in an endless loop I invoke `movement_planner()`, it sets the goal `pos[]` according to the plan, and `update_servo_timers()` to update the PWM generator according to the `pos[]` position. 
 
+## Gait sequences
 Note that all movement planner variables are stored in 3-element arrays, thus the movements (including the speeds) can be independent one from another. 
 Despite that, my current gait implementation uses synchronized movements of all three servos.
 
-## Gait sequences
+
 
 ## Obstacle detection
 
