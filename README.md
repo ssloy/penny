@@ -41,6 +41,12 @@ It is quite straightforward, if you have a printer, just print it. You can find 
 With my 1mm nozzle the prints were completed in a couple of hours. When assembled, it should look like this beast:
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/penny-body-model.jpg)
 
+M3 nylon screws are perfect for the assembly. Use nylon washers between moving parts and lock the nut by the method of your choice.
+Personally I have locked the thread with a soldering iron:
+
+![](https://raw.githubusercontent.com/ssloy/penny/master/doc/nylon-screws.jpg)
+
+
 ## The motherboard
 
 The motherboard is pretty basic. It has an ATMega8 mcu and the proximity sensor circuit, nothing else. Here is the brain:
