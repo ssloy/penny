@@ -47,7 +47,8 @@ Personally I have locked the thread with a soldering iron:
 
 ## The motherboard
 ### The brain
-The motherboard itself is pretty basic. It has an ATMega8 microcontroller and the proximity sensor circuit, nothing else. Here is the brain:
+The motherboard itself is pretty basic. It has an ATMega8 microcontroller and the proximity sensor circuit, nothing else. 
+The source files, the gerber files and the bill of materials can be found in the [hardware/motherboard/](https://github.com/ssloy/penny/tree/master/hardware/motherboard) folder. Here is the brain:
 
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/pcb-mcu.png)
 
