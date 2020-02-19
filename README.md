@@ -127,7 +127,7 @@ The `zero[3]` array provides the angles of all three servos corresponding to the
 
 Current servo position (in degrees, 0°-90°) is supposed to be stored in the `uint8_t pos[3]` array. When calling `update_servo_timers()`, the timers are updated according to the array. The right image above corresponds to the `pos[i]=zero[i]+range[i]` for all three `i=0,1,2`.
 
-All the movements are planned as constant speed. To give an example, let us suppose that we want to move the left servo only. All we need to do is:
+All the movements are planned as constant speed. There are four auxiliary arrays for the movement planner: `pos_beg[3], pos_end[3], time_start[3]` and `duration[3]`. Let us suppose that we want to move the left servo only. All we need to do is:
 * copy `pos[0]` to `pos_beg[0]`, it marks the starting point of the movement;
 * set `pos_end[0]` to the desired position (still in degrees);
 * set `time_start[0]` to the current timestamp (milliseconds since the boot);
