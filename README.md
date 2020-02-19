@@ -117,13 +117,11 @@ First of all, there are 6 important constants in the code:
 const uint8_t  zero[3] = {45, 50, 40};     // zero position of the servo (degrees)
 const uint8_t range[3] = {25, 25, 20};     // the servos are allowed to move in the zero[i] +- range[i] interval
 ```
-The `zero[3]` array provides the angles of all three servos corresponding to the neutral stance (left image):
+The `zero[3]` array provides the angles of all three servos corresponding to the neutral stance (left image below). Ideally, these angles are to be at 45° (midpoint of the servo range), but in practice if we set the servos to 45°, the legs won't be aligned due to descreet teeth position on the shaft. Next, `range[3]` specifies the admissible range. It means that the servo `i` is allowed to move in the `zero[i]-range[i]`to `zero[i]+range[i]` interval. 
 
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/servos-pos-range.jpg)
 
-Ideally, these angles are to be at 45° (midpoint of the servo range), but in practice if we set the servos to 45°, the legs won't be aligned due to descreet teeth position on the shaft. Next, `range[3]` specifies the admissible range. It means that the servo `i` is allowed to move in the `zero[i]-range[i]`to `zero[i]+range[i]` interval.
-
-Current servo position (in degrees, 0°-90°) is supposed to be stored in the `uint8_t pos[3]` array. When calling `update_servo_timers()`, the timers are updated according to the array.
+Current servo position (in degrees, 0°-90°) is supposed to be stored in the `uint8_t pos[3]` array. When calling `update_servo_timers()`, the timers are updated according to the array. The right image above corresponds to the `pos[i]=zero[i]+range[i]` for all three `i=0,1,2`.
 
 All the movements are planned as constant speed. To give an example, let us suppose that we want to move the left servo only. All we need to do is:
 * copy `pos[0]` to `pos_beg[0]`, it marks the starting point of the movement;
