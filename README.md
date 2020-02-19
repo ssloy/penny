@@ -77,21 +77,17 @@ Note that you may need to adjust the R6 resistor value.
 For example, I have scraped a couple of LEDs from a broken toy, and they work perfectly on 3mA (910 Ohms)!
 
 I recommend to assemble first the sensing unit on a breadboard without the LEDs.
-Then take a CR2032 or a similar battery, put the LED pins on the battery directly and put it against the phototransistor.
-Verify that the voltage drops as expected.
+Then light up the LED with a CR2032 or a similar battery, pand put it against the phototransistor (I do not know the internal resistance of the battery, but I have never seen a LED fried from such an operation. Correct me if I am wrong).
+Verify that the voltage on the Q3 and Q4 collector pins drops as expected.
 Once the sensing unit is okay, try to find a good resistor value for the LEDs to obtain the behaivour you see on the above video.
-Note that it is important to put a heatshrink around both the LEDs and the phototransistors to avoid parasitic lights.
+Note that it is important to put a heatshrink around both the LEDs and the phototransistors to cut off parasitic lights.
 Moreover, with heatshrink it fits neatly into the eyesockets.
 
 If you fail to assemble the proximity sensor, or simply dislike it, there are plenty of options:
 
 * You can use isf471 instead of the phototransistors and all the 2n3904 circuitry.
-* You can buy Sharp GP2Y0A21YK0F distance measuring units:
-
-<img src="https://raw.githubusercontent.com/ssloy/penny/master/doc/GP2Y0A21YK0F.jpg" width="320"/>
-* Or a basic binary proximity sensor based on a LM393 differential comparator:
-
-<img src="https://raw.githubusercontent.com/ssloy/penny/master/doc/lm393.jpg" width="320"/>
+* You can buy Sharp GP2Y0A21YK0F distance measuring units: <br/> <img src="https://raw.githubusercontent.com/ssloy/penny/master/doc/GP2Y0A21YK0F.jpg" width="320"/>
+* Or a basic binary proximity sensor based on a LM393 differential comparator: <br/> <img src="https://raw.githubusercontent.com/ssloy/penny/master/doc/lm393.jpg" width="320"/>
 
 # Wishlist
 If you are a good soul willing to create a V2 of the motherboard, you are very welcome to do so. Here are the things that I'd like to be fixed/added/modified in the motherboard:
