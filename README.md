@@ -161,7 +161,7 @@ const int8_t advance_sequence[4][3] = {{-1, -1,  1}, {-1, -1, -1}, { 1,  1, -1},
 ```
 This array tells us that the goal position of the servo `i` at the step `step` is `zero[i] + range[i]*advance_sequence[step][i]`.
 Then the following code makes Penny to go forward indefinitely:
-```
+```c
     uint8_t step = steps_per_sequence-1; // at the initialization stage the (previous) movement is considered to be complete, thus the next movement will be planned starting from the step 0
     while (1) {
         if (is_movement_finished()) {
