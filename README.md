@@ -97,7 +97,7 @@ Moreover, with heatshrink it fits neatly into the eyesockets. When soldering the
 
 If you do to not have an oscilloscope, that is okay, you can do it with a couple of debugging LEDs, check the blue LEDs on the following video:
 
-![](https://raw.githubusercontent.com/ssloy/penny/master/doc/proximity-sensor.gif)
+![](https://raw.githubusercontent.com/ssloy/penny/master/doc/proximity-sensor2.gif)
 
 For a more distant obstacles the LEDs will be less bright.
 
