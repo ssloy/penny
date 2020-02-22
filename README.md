@@ -1,13 +1,13 @@
 # Meet Penny#3, a 3 servo hexapod.
-Penny is a low budget (roughly ten bucks) hexapod. It can be a great one-weekend project to entertain yourself and your kids. Check for Penny dancing to funky music (clickable):
+Penny is a low budget (roughly ten bucks) hexapod. It can be a great one-weekend project to entertain yourself and your kids. Check for Penny dancing to funky music (youtube link):
 
 [![Penny dances](https://img.youtube.com/vi/quMe5CEoOok/0.jpg)](https://youtu.be/quMe5CEoOok)
 
-Penny avoids obstacles (clickable):
+Penny avoids obstacles (youtube link):
 
 [![Penny dances](https://img.youtube.com/vi/f4vZZBQZLEU/0.jpg)](https://youtu.be/f4vZZBQZLEU)
 
-In her current form, Penny only knows to walk; she can see (measure distance to) nearby obstacles. Her brains, however, are powerful enough to digest data from many other sensors, send me your suggestions!
+In her current state, Penny only knows to walk; she can see (measure distance to) nearby obstacles. Her brains, however, are powerful enough to digest data from many other sensors, send me your suggestions!
 
 Penny is a tremendous fun!
 
@@ -19,7 +19,7 @@ Penny has two elder sisters, [Penny](https://youtu.be/7Py03SH5DbE) and [Penny](h
 # How to clone
 ## Bill of materials
 Printing the body costs next to nothing if you have a 3d printer. Here are the main things you need to build the bot:
-* The motherboard. You can either etch it by yourself, or you can check chinese factories, any normal day it costs ~10€ / 10 pcs (shipping included), with discounts it can cost 2€ / 10 pcs. You can find an alternative like cheapduino or similar, because the schematics is very, very basic.
+* The motherboard. You can either etch it by yourself, or you can check chinese factories, any normal day it costs ~10€ / 10 pcs (shipping included). Since the board is tiny, personally I appended it to another order, and it was free of charge for me. You can find an alternative like cheapduino or similar, because the schematics is very, very basic.
 * [SG90 9G micro servo, 3 * 1.47€ / piece](https://www.aliexpress.com/item/4000595327297.html)
 * [4x AAA battery holder, 1.34€ / piece](https://www.aliexpress.com/item/33049875634.html)
 * [ATMega8A-AU (QFP-32), 1€ / piece](https://www.aliexpress.com/item/32557093316.html)
@@ -37,7 +37,7 @@ It is quite straightforward, if you have a printer, just print it. You can find 
 
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/penny-body-print.jpg)
 
-With my 1mm nozzle the prints were completed in a couple of hours. When assembled, it should look like this beast:
+My printer is equipped with 1mm nozzle, so the prints were completed in less than two hours. When assembled, it should look like this beast:
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/penny-body-model.jpg)
 
 M3 nylon screws are perfect for the assembly. Use nylon washers between moving parts and lock the nut by the method of your choice.
@@ -47,8 +47,11 @@ Personally I have locked the thread with a soldering iron:
 
 ## The motherboard
 ### The brain
-The motherboard itself is pretty basic. It has an ATMega8 microcontroller and the proximity sensor circuit, nothing else. 
-The source files, the gerber files and the bill of materials can be found in the [hardware/motherboard/](https://github.com/ssloy/penny/tree/master/hardware/motherboard) folder. Here is the brain:
+The motherboard itself is pretty basic. It has an ATMega8 microcontroller and the proximity sensor circuit, nothing else. The source files, the gerber files and the bill of materials can be found in the [hardware/motherboard/](https://github.com/ssloy/penny/tree/master/hardware/motherboard) folder. Here is a render of the gerber files:
+
+![](https://raw.githubusercontent.com/ssloy/penny/master/doc/mb-gerber.png)
+
+And the part of the schematics with the brain:
 
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/pcb-mcu.png)
 
@@ -66,7 +69,7 @@ Here is a photo of the motherboard fully populated (with an exception of IR led/
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/penny_motherboard.jpg)
 
 ### The proximity sensor
-Penny has two eyes, each one is composed of an infrared LED and a corresponding phototransistor.
+Penny has two eyes, each one is made of an infrared LED and a corresponding phototransistor.
 The LED emits infrared light; this light propagates through the air and once it hits an object it is reflected back towards the phototransistor.
 If the object is close, the reflected light will be stronger than if the object is further away.
 Note that while the infrared light is not visible by a human eye, some cameras may see it and show it on the recordings,
@@ -119,12 +122,12 @@ The servos take a 50 Hz PWM signal; 1 ms minimum pulse width (0 deg), 2 ms maxim
 
 The microcontroller ticks at 8 MHz, and the timer1 ticks at 1 MHz (prescaler 8), and ICR1 provides the TOP value (20000), thus it restarts every 20 ms, providing a correct 50 Hz signal. OCR1A and OCR1B registers control microsecond pulse widths for the left and right servos.
 
-The problem comes with the center servo attached to a 8 bit timer2. It does not have a handy ICR1 analog, so the overflowing frequency is controlled via the prescaler only. There are no prescalers good enough to approximate 50 Hz, here is an idea that lies somewhere inbetween a software and a hardware PWM:
+The problem comes with the center servo attached to a 8 bit timer2. It does not have a handy ICR1 analog, so the overflowing frequency is controlled via the prescaler only. There are no prescalers to approximate 50 Hz well enough, so here is an idea that lies somewhere inbetween a software and a hardware PWM:
 * we set timer2 to tick at prescaler 128, thus it overflows after 4.096 ms = 256 * 128/(8 * 10^6).
-* At the overflow we disable the timer2, so it is a one shot pulse.
+* At the overflow we disable the timer2, so it is a one-shot pulse.
 * At the timer1 capture interrupt we re-arm the (one-shot) timer2.
 
-4 ms is superior to a 2 ms max pulse width we need to control, and is well inferior to the 20 ms re-arming beat. To sum up, let us say we want to put all three servos to the middle position (1.5 ms pulse width). We need to do the following:
+4 ms is superior to a 2 ms max pulse width we need to control, and is well inferior to the 20 ms re-arming beat. To sum up, let us say we want to put all three servos to the middle position (1500 μs pulse width). We need to do the following:
 ```c
 OCR1A = 1500;    // left servo
 OCR1B = 1500;    // right servo
@@ -149,7 +152,7 @@ All the movements are planned as constant speed. There are four auxiliary arrays
 * set `time_start[0]` to the current timestamp (milliseconds since the boot);
 * and, finally, set `duration[0]` (in seconds). That is, the speed will be `(pos_end[0]-pos_beg[0])/duration[0]` degrees/sec.
 
-Then in an endless loop I invoke `movement_planner()`, it sets the goal `pos[]` according to the plan, and `update_servo_timers()` to update the PWM generator according to the `pos[]` position. 
+Then in an endless loop I invoke `movement_planner()`, it sets the goal `pos[]` according to the plan, and `update_servo_timers()` to update the PWM generator according to the `pos[]` position.
 
 ### Gait sequences
 Note that all movement planner variables are stored in 3-element arrays, thus the movements (including the speeds) can be independent one from another. 
