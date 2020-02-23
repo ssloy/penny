@@ -37,7 +37,7 @@ It is quite straightforward, if you have a printer, just print it. You can find 
 
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/penny-body-print.jpg)
 
-My printer is equipped with 1mm nozzle, so the prints were completed in less than two hours. When assembled, it should look like this beast:
+My printer is equipped with a 1mm nozzle, so the prints were completed in less than two hours. When assembled, it should look like this beast:
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/penny-body-model.jpg)
 
 M3 nylon screws are perfect for the assembly. Use nylon washers between moving parts and lock the nut by the method of your choice.
@@ -102,7 +102,7 @@ If you do to not have an oscilloscope, that is okay, you can do it with a couple
 
 ![](https://raw.githubusercontent.com/ssloy/penny/master/doc/proximity-sensor2.gif)
 
-For a more distant obstacles the LEDs will be less bright.
+For more distant obstacles the LEDs will be less bright.
 
 If you fail to assemble the proximity sensor, or simply dislike it, there are plenty of options:
 
